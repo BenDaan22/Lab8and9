@@ -57,7 +57,8 @@ def images_index():
     Complete the code below generating a valid response. 
     """
     
-    resp = ''
+    output = docker('images')
+    resp = json.dumps(docker_ps_to_array(output))
     return Response(response=resp, mimetype="application/json")
 
 @app.route('/containers/<id>', methods=['GET'])
@@ -66,10 +67,9 @@ def containers_show(id):
     Inspect specific container
 
     """
+    output = docker('inspect',id)
 
-    resp = ''
-
-    return Response(response=resp, mimetype="application/json")
+    return Response(response=output, mimetype="application/json")
 
 @app.route('/containers/<id>/logs', methods=['GET'])
 def containers_log(id):
@@ -77,7 +77,7 @@ def containers_log(id):
     Dump specific container logs
 
     """
-    resp = ''
+    resp = json.dumps(docker_logs_to_object(id,docker('logs',id)))
     return Response(response=resp, mimetype="application/json")
 
 
@@ -85,6 +85,7 @@ def containers_log(id):
 def images_remove(id):
     """
     Delete a specific image
+    curl -s -X DELETE -H 'Accept:application/json' http://ec2-52-30-50-209.eu-west-1.compute.amazonaws.com:8080/images/fb434121fc77 | python -m json.tool
     """
     docker ('rmi', id)
     resp = '{"id": "%s"}' % id
@@ -96,8 +97,8 @@ def containers_remove(id):
     Delete a specific container - must be already stopped/killed
 
     """
-    resp = ''
-    return Response(response=resp, mimetype="application/json")
+    output = docker ('rm', id)
+    return Response(response=output, mimetype="application/json")
 
 @app.route('/containers', methods=['DELETE'])
 def containers_remove_all():
@@ -105,13 +106,14 @@ def containers_remove_all():
     Force remove all containers - dangrous!
 
     """
-    resp = ''
-    return Response(response=resp, mimetype="application/json")
+    output = docker('rm',id)
+    return Response(response=output, mimetype="application/json")
 
 @app.route('/images', methods=['DELETE'])
 def images_remove_all():
     """
     Force remove all images - dangrous!
+    curl -s -X DELETE -H 'Accept:application/json' http://ec2-52-30-50-209.eu-west-1.compute.amazonaws.com:8080/images/ | python -m json.tool
 
     """
  
